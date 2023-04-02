@@ -1,5 +1,5 @@
-# Discord Notifications for Tesla
-Receive alerts from your Tesla and control your Tesla using Discord.
+# Tesla Over Discord
+Control your Tesla through your Discord application.
 
 ## Installation
 This project is possible with [`discord.py`](https://github.com/Rapptz/discord.py) and the [TeslaPy (by tdorssers)](https://github.com/tdorssers/TeslaPy)
