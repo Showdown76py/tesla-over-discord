@@ -324,20 +324,20 @@ async def info(interaction: Interaction) -> None:
     ).json()['image']['url']
     embed.set_image(url=img_url)
 
-    embed.description = 'Your car is **'+('locked' if data['vehicle_state']['locked'] else 'unlocked')+'**'
-    embed.description += '\nSentry Mode is **'+('enabled' if data['vehicle_state']['sentry_mode'] else 'disabled')+'**'
+    embed.description = ('🔒' if data['vehicle_state']['locked'] else '🔓') +'Your car is **'+('locked' if data['vehicle_state']['locked'] else 'unlocked')+'**'
+    embed.description += '\n' + ('⭕' if not data['vehicle_state']['sentry_mode'] else '🔴') + ' Sentry Mode is **'+('enabled' if data['vehicle_state']['sentry_mode'] else 'disabled')+'**'
     if data['climate_state']['is_climate_on']:
-        embed.description += '\nClimate is **on** (going to **' + str(data['climate_state']['driver_temp_settings']) + '°C**)'
+        embed.description += '\n🌡️ Climate is **on** (going to **' + str(data['climate_state']['driver_temp_settings']) + '°C**)'
     if data['vehicle_state']['software_update']['status'] != '':
-        embed.description += '\n**An update is available!**'
+        embed.description += '\n🔄️ **A software update is available**'
 
     # Vehicle Data
     # Get loaction
     l = requests.get(f'https://nominatim.openstreetmap.org/reverse.php?lat={data["drive_state"]["latitude"]}&lon={data["drive_state"]["longitude"]}&format=jsonv2').json()
-    embed.add_field(name='Location', value=f"{l['address']['municipality']}\n||**{l['address']['road']}** || *(click to reveal)*")
-    embed.add_field(name='Inside Temperature', value=f"{int(data['climate_state']['inside_temp'])}°C")
-    embed.add_field(name='Outside Temperature', value=f"{int(data['climate_state']['outside_temp'])}°C")
-    embed.add_field(name=('Not Charging' if data['charge_state']['charging_state'] == 'Disconnected' else "Charging"), value=f"**Battery Level:** {int(data['charge_state']['battery_level'])}% ({int(data['charge_state']['battery_range']*1.609)} km)")
+    embed.add_field(name='🗺️ Location', value=f"{l['address']['municipality']}\n||**{l['address']['road']}** || *(click to reveal)*")
+    embed.add_field(name='🌡️ Car Temperature', value=f"{int(data['climate_state']['inside_temp'])}°C")
+    embed.add_field(name='🌆 Ext. Temperature', value=f"{int(data['climate_state']['outside_temp'])}°C")
+    embed.add_field(name=(('🔋' if int(data['charge_state']['battery_level'])>20 else '🪫') + ' Not Charging' if data['charge_state']['charging_state'] == 'Disconnected' else "⚡ Charging"), value=f"**Battery Level:** {int(data['charge_state']['battery_level'])}% ({int(data['charge_state']['battery_range']*1.609)} km)")
 
     formatted_odometer = format(int(data['vehicle_state']['odometer']*1.609)+1, ',d').replace(',', ' ')
     status = 'Parked'
