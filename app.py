@@ -185,7 +185,7 @@ async def honk_horn(interaction: Interaction) -> None:
     vehicle.command('HONK_HORN')
     await interaction.followup.send("📢 **Honking** horn")
 
-@commands.command(
+@app.tree.command(
     name="wake-up",
     description='Interally wakes up the car'
 )
