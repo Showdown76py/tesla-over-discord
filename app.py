@@ -57,7 +57,7 @@ class App(discord.Client):
         self.tree = app_commands.CommandTree(self)
     
     async def setup_hook(self) -> None:
-            await self.tree.sync()
+        await self.tree.sync()
 
 app = App(intents=intents)
 
