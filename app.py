@@ -71,7 +71,7 @@ def get_vehicle_data():
     vehicle: teslapy.Vehicle = vehicles[selected_car]
     vehicle.sync_wake_up()
     vehicle_data = vehicle.get_vehicle_data()
-    logger.DEBUG(vehicle_data)
+    logger.debug(vehicle_data)
     return json.loads(str(vehicle_data))
 
 @app.event
@@ -267,7 +267,7 @@ async def info(interaction: Interaction) -> None:
     embed = discord.Embed()
     embed.color = discord.Color.red()
     embed.set_author(name='Your Tesla Model ' + vehicle['vin'][3])
-    logger.DEBUG(data)
+    logger.debug(data)
     embed.title = f"{data['display_name']}"
     # Vehicle Image
     # TODO: Option Codes deprecated
@@ -275,7 +275,7 @@ async def info(interaction: Interaction) -> None:
         if 'CUSTOM_OPTIONS' in os.environ.keys():
             opt_codes = os.environ['CUSTOM_OPTIONS'].split(',')
     else: opt_codes = data['option_codes']
-    logger.DEBUG(opt_codes)
+    logger.debug(opt_codes)
     img = vehicle.compose_image(size=1024, options=','.join(opt_codes))
     img_url=requests.post(
         'https://freeimage.host/api/1/upload',
