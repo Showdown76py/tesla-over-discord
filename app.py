@@ -48,6 +48,8 @@ vehicles = []
 intents = discord.Intents.default()
 intents.members = True
 
+
+
 class App(discord.Client):
     def __init__(self, *, intents: discord.Intents) -> None:
         logger.info("Initializing App")
@@ -66,10 +68,15 @@ async def on_interaction(interaction: Interaction) -> None:
     else:
         await interaction.response.send_message("You are not an authorized user!")
 
-def get_vehicle_data():
+async def wakeup():
+    await app.change_presence(activity=discord.Game(name="Waking up..."), status=discord.Status.idle)
+    vehicles[0].sync_wake_up()
+    await app.change_presence(status=discord.Status.online)
+
+async def get_vehicle_data():
     global selected_car
     vehicle: teslapy.Vehicle = vehicles[selected_car]
-    vehicle.sync_wake_up()
+    await wakeup()
     vehicle_data = vehicle.get_vehicle_data()
     logger.debug(vehicle_data)
     return json.loads(str(vehicle_data))
@@ -107,6 +114,9 @@ sentrymode = app_commands.tree.Group(
     description="Sentry Mode related commands"
 )
 
+
+
+
 def authorized_users_only(interaction: Interaction, **kwargs) -> bool:
     return interaction.user.id in allowed_user_ids
 
@@ -120,7 +130,7 @@ async def activate(interaction: Interaction) -> None:
     logger.debug("activate command called")
     await interaction.response.defer()
     vehicle: teslapy.Vehicle = vehicles[selected_car]
-    vehicle.sync_wake_up()
+    await wakeup()
     vehicle.command('SET_SENTRY_MODE', on=True)
     await interaction.followup.send("👀 Sentry Mode **activated**")
 
@@ -136,7 +146,7 @@ async def deactivate(interaction: Interaction) -> None:
     logger.debug("deactivate command called")
     await interaction.response.defer()
     vehicle: teslapy.Vehicle = vehicles[selected_car]
-    vehicle.sync_wake_up()
+    await wakeup()
     vehicle.command('SET_SENTRY_MODE', on=False)
     await interaction.followup.send("👀 Sentry Mode **deactivated**")
 
@@ -157,7 +167,7 @@ async def flash_headlights(interaction: Interaction) -> None:
     logger.debug("flash-headlights command called")
     await interaction.response.defer()
     vehicle: teslapy.Vehicle = vehicles[selected_car]
-    vehicle.sync_wake_up()
+    await wakeup()
     vehicle.command('FLASH_LIGHTS')
     await interaction.followup.send("🚦 Flashed headlights")
 
@@ -171,7 +181,7 @@ async def honk_horn(interaction: Interaction) -> None:
     logger.debug("honk-horn command called")
     await interaction.response.defer()
     vehicle: teslapy.Vehicle = vehicles[selected_car]
-    vehicle.sync_wake_up()
+    await wakeup()
     vehicle.command('HONK_HORN')
     await interaction.followup.send("📢 **Honking** horn")
 
@@ -185,10 +195,10 @@ async def ventilate(interaction: Interaction) -> None:
     logger.debug("ventilate command called")
     await interaction.response.defer()
     vehicle: teslapy.Vehicle = vehicles[selected_car]
-    vehicle.sync_wake_up()
+    await wakeup()
     # Check if the windows are already opened
     close = False
-    if get_vehicle_data()['vehicle_state']['fd_window'] != 0:
+    if (await get_vehicle_data())['vehicle_state']['fd_window'] != 0:
         close = True
     vehicle.command('WINDOW_CONTROL', command='vent' if not close else "close", lat=0, lon=0)
     await interaction.followup.send("🪟 **Ventilating** (opening windows)" if not close else "🪟 **Closing windows**")
@@ -211,7 +221,7 @@ async def start_climate(interaction: Interaction) -> None:
     logger.debug("start command called")
     await interaction.response.defer()
     vehicle: teslapy.Vehicle = vehicles[selected_car]
-    vehicle.sync_wake_up()
+    await wakeup()
     vehicle.command('CLIMATE_ON')
     await interaction.followup.send("🌡️ **Starting climate**")
 
@@ -229,7 +239,7 @@ async def open_chests(interaction: Interaction, which: app_commands.Choice[str])
     logger.debug("open_chests command called")
     await interaction.response.defer()
     vehicle: teslapy.Vehicle = vehicles[selected_car]
-    vehicle.sync_wake_up()
+    await wakeup()
     if which.value == "Rear":
         vehicle.command('ACTUATE_TRUNK', which_trunk="rear")
     elif which.value == "Front":
@@ -246,7 +256,7 @@ async def stop_climate(interaction: Interaction) -> None:
     logger.debug("stop command called")
     await interaction.response.defer()
     vehicle: teslapy.Vehicle = vehicles[selected_car]
-    vehicle.sync_wake_up()
+    await wakeup()
     vehicle.command('CLIMATE_OFF')
     await interaction.followup.send("🌡️ **Stopping climate**")
 
@@ -262,11 +272,10 @@ async def info(interaction: Interaction) -> None:
     logger.debug("info command called")
     await interaction.response.defer()
     vehicle: teslapy.Vehicle = vehicles[selected_car]
-    vehicle.sync_wake_up()
-    data = get_vehicle_data()
+    data = await get_vehicle_data()
     embed = discord.Embed()
-    embed.color = discord.Color.red()
-    embed.set_author(name='Your Tesla Model ' + vehicle['vin'][3])
+    embed.color = 0xe12026
+    embed.set_author(name='Model ' + vehicle['vin'][3])
     logger.debug(data)
     embed.title = f"{data['display_name']}"
     # Vehicle Image
@@ -335,7 +344,7 @@ async def unlock(interaction: Interaction) -> None:
     logger.debug("unlock command called")
     await interaction.response.defer()
     vehicle: teslapy.Vehicle = vehicles[selected_car]
-    vehicle.sync_wake_up()
+    await wakeup()
     vehicle.command('UNLOCK')
     await interaction.followup.send('🔓 **'+vehicle['display_name']+'** is now unlocked')
 
@@ -349,7 +358,7 @@ async def unlock(interaction: Interaction) -> None:
     logger.debug("lock command called")
     await interaction.response.defer()
     vehicle: teslapy.Vehicle = vehicles[selected_car]
-    vehicle.sync_wake_up()
+    await wakeup()
     vehicle.command('LOCK')
     await interaction.followup.send('🔓 **'+vehicle['display_name']+'** is now unlocked')
 
