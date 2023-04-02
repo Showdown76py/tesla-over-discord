@@ -24,7 +24,7 @@ class Formatting(logging.Formatter):
     format = "\033[1;30m{asctime} [c]{levelname:<8} \033[0;35m{name} \033[0m{message}"
 
     FORMATS = {
-        logger.DEBUG: format.replace('[c]',light_blue),
+        logging.DEBUG: format.replace('[c]',light_blue),
         logging.INFO: format.replace('[c]',blue),
         logging.WARNING: format.replace('[c]',yellow),
         logging.ERROR: format.replace('[c]',red),
