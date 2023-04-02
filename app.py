@@ -59,7 +59,6 @@ class App(discord.Client):
 
 app = App(intents=intents)
 
-# check if user id in allowed_user_ids, if yes proceed to the interactions, otherwise return
 @app.event
 async def on_interaction(interaction: Interaction) -> None:
     if interaction.user.id in allowed_user_ids:
@@ -160,7 +159,7 @@ async def flash_headlights(interaction: Interaction) -> None:
     vehicle: teslapy.Vehicle = vehicles[selected_car]
     vehicle.sync_wake_up()
     vehicle.command('FLASH_LIGHTS')
-    await interaction.followup.send("🚦 Flashing headlights")
+    await interaction.followup.send("🚦 Flashed headlights")
 
 @commands.command(
     name='honk-horn',
@@ -174,7 +173,7 @@ async def honk_horn(interaction: Interaction) -> None:
     vehicle: teslapy.Vehicle = vehicles[selected_car]
     vehicle.sync_wake_up()
     vehicle.command('HONK_HORN')
-    await interaction.followup.send("📢 Honking horn")
+    await interaction.followup.send("📢 **Honking** horn")
 
 @commands.command(
     name="ventilate",
@@ -192,7 +191,7 @@ async def ventilate(interaction: Interaction) -> None:
     if get_vehicle_data()['vehicle_state']['fd_window'] != 0:
         close = True
     vehicle.command('WINDOW_CONTROL', command='vent' if not close else "close", lat=0, lon=0)
-    await interaction.followup.send("🪟 Ventilating" if not close else "🪟 Closing windows")
+    await interaction.followup.send("🪟 **Ventilating** (opening windows)" if not close else "🪟 **Closing windows**")
 
 
 app.tree.add_command(commands)
@@ -214,7 +213,7 @@ async def start_climate(interaction: Interaction) -> None:
     vehicle: teslapy.Vehicle = vehicles[selected_car]
     vehicle.sync_wake_up()
     vehicle.command('CLIMATE_ON')
-    await interaction.followup.send("🌡️ Starting climate")
+    await interaction.followup.send("🌡️ **Starting climate**")
 
 @app.tree.command(
     name="trunk",
@@ -231,11 +230,11 @@ async def open_chests(interaction: Interaction, which: app_commands.Choice[str])
     await interaction.response.defer()
     vehicle: teslapy.Vehicle = vehicles[selected_car]
     vehicle.sync_wake_up()
-    if which == "Rear":
+    if which.value == "Rear":
         vehicle.command('ACTUATE_TRUNK', which_trunk="rear")
-    elif which == "Front":
+    elif which.value == "Front":
         vehicle.command('ACTUATE_TRUNK', which_trunk='front')
-    await interaction.followup.send(f"🚪 Actuating **{which} trunk**")
+    await interaction.followup.send(f"🚪 Actuating **{which.value} trunk**")
 
 @climate.command(
     name="stop",
@@ -249,7 +248,7 @@ async def stop_climate(interaction: Interaction) -> None:
     vehicle: teslapy.Vehicle = vehicles[selected_car]
     vehicle.sync_wake_up()
     vehicle.command('CLIMATE_OFF')
-    await interaction.followup.send("🌡️ Stopping climate")
+    await interaction.followup.send("🌡️ **Stopping climate**")
 
 app.tree.add_command(climate)
 
