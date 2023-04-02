@@ -11,7 +11,7 @@ import base64
 
 dotenv.load_dotenv()
 allowed_user_ids = [int(a) for a in os.environ["ALLOWED_USERIDS"].split(",")]
-logger = logging.getLogger("tesla-notifications-discord")
+logger = logging.getLogger("tesla-over-discord")
 
 class Formatting(logging.Formatter):
 
