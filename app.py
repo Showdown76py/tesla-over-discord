@@ -8,8 +8,9 @@ import dotenv
 from discord import app_commands, Interaction
 import base64
 
-dotenv.load_dotenv()
 
+dotenv.load_dotenv()
+allowed_user_ids = [int(a) for a in os.environ["ALLOWED_USERIDS"].split(",")]
 logger = logging.getLogger("tesla-notifications-discord")
 
 class Formatting(logging.Formatter):
@@ -64,6 +65,14 @@ class App(discord.Client):
 
 app = App(intents=intents)
 
+# check if user id in allowed_user_ids, if yes proceed to the interactions, otherwise return
+@app.event
+async def on_interaction(interaction: Interaction) -> None:
+    if interaction.user.id in allowed_user_ids:
+        pass
+    else:
+        await interaction.response.send_message("You are not an authorized user!")
+
 def get_vehicle_data():
     global selected_car
     vehicle: teslapy.Vehicle = vehicles[selected_car]
@@ -105,10 +114,14 @@ sentrymode = app_commands.tree.Group(
     description="Sentry Mode related commands"
 )
 
+def authorized_users_only(interaction: Interaction, **kwargs) -> bool:
+    return interaction.user.id in allowed_user_ids
+
 @sentrymode.command(
     name="activate",
     description="Activate Sentry Mode"
 )
+@app_commands.check(authorized_users_only)
 async def activate(interaction: Interaction) -> None:
     global selected_car
     logger.debug("activate command called")
@@ -116,8 +129,7 @@ async def activate(interaction: Interaction) -> None:
     vehicle: teslapy.Vehicle = vehicles[selected_car]
     vehicle.sync_wake_up()
     vehicle.command('SET_SENTRY_MODE', on=True)
-    await interaction.followup.send_message("👀 Sentry Mode **activated**"
-)
+    await interaction.followup.send("👀 Sentry Mode **activated**")
 
 
 
@@ -125,6 +137,7 @@ async def activate(interaction: Interaction) -> None:
     name="deactivate",
     description="Deactivate Sentry Mode"
 )
+@app_commands.check(authorized_users_only)
 async def deactivate(interaction: Interaction) -> None:
     global selected_car
     logger.debug("deactivate command called")
@@ -145,6 +158,7 @@ commands = app_commands.tree.Group(
     name='flash-lights',
     description="Flash the headlights"
 )
+@app_commands.check(authorized_users_only)
 async def flash_headlights(interaction: Interaction) -> None:
     global selected_car
     logger.debug("flash-headlights command called")
@@ -158,6 +172,7 @@ async def flash_headlights(interaction: Interaction) -> None:
     name='honk-horn',
     description="Honk the horn"
 )
+@app_commands.check(authorized_users_only)
 async def honk_horn(interaction: Interaction) -> None:
     global selected_car
     logger.debug("honk-horn command called")
@@ -171,6 +186,7 @@ async def honk_horn(interaction: Interaction) -> None:
     name="ventilate",
     description="Ventilate the car (opens the windows slightly)"
 )
+@app_commands.check(authorized_users_only)
 async def ventilate(interaction: Interaction) -> None:
     global selected_car
     logger.debug("ventilate command called")
@@ -196,6 +212,7 @@ climate = app_commands.tree.Group(
     name="heat",
     description="Start the climate"
 )
+@app_commands.check(authorized_users_only)
 async def start_climate(interaction: Interaction) -> None:
     global selected_car
     logger.debug("start command called")
@@ -213,6 +230,7 @@ async def start_climate(interaction: Interaction) -> None:
     app_commands.Choice(name="Rear", value="Rear"),
     app_commands.Choice(name="Front", value="Front"),
 ])
+@app_commands.check(authorized_users_only)
 async def open_chests(interaction: Interaction, which: app_commands.Choice[str]) -> None:
     global selected_car
     logger.debug("open_chests command called")
@@ -229,6 +247,7 @@ async def open_chests(interaction: Interaction, which: app_commands.Choice[str])
     name="stop",
     description="Stop the climate"
 )
+@app_commands.check(authorized_users_only)
 async def stop_climate(interaction: Interaction) -> None:
     global selected_car
     logger.debug("stop command called")
@@ -244,6 +263,7 @@ app.tree.add_command(climate)
     name="info",
     description="Get informations about your car"
 )
+@app_commands.check(authorized_users_only)
 async def info(interaction: Interaction) -> None:
     global selected_car
     logger.debug("info command called")
@@ -316,6 +336,7 @@ async def info(interaction: Interaction) -> None:
     name="unlock",
     description='Unlocks your Tesla'
 )
+@app_commands.check(authorized_users_only)
 async def unlock(interaction: Interaction) -> None:
     global selected_car
     logger.debug("unlock command called")
@@ -329,6 +350,7 @@ async def unlock(interaction: Interaction) -> None:
     name="lock",
     description='Locks your Tesla'
 )
+@app_commands.check(authorized_users_only)
 async def unlock(interaction: Interaction) -> None:
     global selected_car
     logger.debug("lock command called")

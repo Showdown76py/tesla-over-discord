@@ -14,9 +14,14 @@ pip install -r requirements.txt
 ```
 DISCORD_TOKEN=<your Discord bot token>
 TESLA_EMAIL=elon@tesla.com
+ALLOWED_USERIDS=100000000000,200000000000
 ```
+Make sure to replace the values with your parameters.
 
 3. Run the bot
 ```
 python app.py
 ```
+
+# Important Notice
+Your session will be saved into a `cache.json` file. Even tho it is not a secure way to save a session token, I cannot modify that, so please make sure that you don't share your `cache.json` file with anyone.
