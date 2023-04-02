@@ -337,7 +337,24 @@ async def info(interaction: Interaction) -> None:
     embed.add_field(name='🗺️ Location', value=f"{l['address']['municipality']}\n||**{l['address']['road']}** || *(click to reveal)*")
     embed.add_field(name='🌡️ Car Temperature', value=f"{int(data['climate_state']['inside_temp'])}°C")
     embed.add_field(name='🌆 Ext. Temperature', value=f"{int(data['climate_state']['outside_temp'])}°C")
-    embed.add_field(name=(('🔋' if int(data['charge_state']['battery_level'])>20 else '🪫') + ' Not Charging' if data['charge_state']['charging_state'] == 'Disconnected' else "⚡ Charging"), value=f"**Battery Level:** {int(data['charge_state']['battery_level'])}% ({int(data['charge_state']['battery_range']*1.609)} km)")
+    charge_status = None
+    if data['charge_state']['charging_state'] == 'Disconnected':
+        charge_status = ('🔋' if int(data['charge_state']['battery_level'])>20 else '🪫') + ' Not Charging'
+    elif data['charge_state']['charging_state'] == 'Complete':
+        charge_status = '🟩 Charge Complete'
+    elif data['charge_state']['charging_state'] == 'Charging':
+        charge_status = '⚡ Charging'
+    elif data['charge_state']['charging_state'] == 'Stopped':
+        charge_status = '🟥 Charge Interrupted'
+    elif data['charge_state']['charging_state'] == 'Starting':
+        charge_status = '🟦 Starting Charge'
+    elif data['charge_state']['charging_state'] == 'No Power':
+        charge_status = '⚠️ No Power'
+    elif data['charge_state']['charging_state'] == 'Disconnected':
+        charge_status = '🔌 Disconnected'
+    else:
+        charge_status = '❓ Unknown State'
+    embed.add_field(name=charge_status, value=f"**Battery Level:** {int(data['charge_state']['battery_level'])}% ({int(data['charge_state']['battery_range']*1.609)} km)")
 
     formatted_odometer = format(int(data['vehicle_state']['odometer']*1.609)+1, ',d').replace(',', ' ')
     status = 'Parked'
