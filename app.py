@@ -186,6 +186,20 @@ async def honk_horn(interaction: Interaction) -> None:
     await interaction.followup.send("📢 **Honking** horn")
 
 @commands.command(
+    name="fart",
+    description="Make the car fart"
+)
+@app_commands.check(authorized_users_only)
+async def fart(interaction: Interaction) -> None:
+    global selected_car
+    logger.debug("fart command called")
+    await interaction.response.defer()
+    vehicle: teslapy.Vehicle = vehicles[selected_car]
+    await wakeup()
+    vehicle.command('REMOTE_BOOMBOX')
+    await interaction.followup.send("💨 **Farted**")
+
+@commands.command(
     name="ventilate",
     description="Ventilate the car (opens the windows slightly)"
 )
