@@ -24,7 +24,7 @@ class Formatting(logging.Formatter):
     format = "\033[1;30m{asctime} [c]{levelname:<8} \033[0;35m{name} \033[0m{message}"
 
     FORMATS = {
-        logging.DEBUG: format.replace('[c]',light_blue),
+        logger.DEBUG: format.replace('[c]',light_blue),
         logging.INFO: format.replace('[c]',blue),
         logging.WARNING: format.replace('[c]',yellow),
         logging.ERROR: format.replace('[c]',red),
@@ -40,13 +40,11 @@ class Formatting(logging.Formatter):
 handler = logging.StreamHandler()
 handler.setFormatter(Formatting())
 logger.addHandler(handler)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 selected_car = None
 tesla = None
 vehicles = []
-DEV = True
-gu=discord.Object(id=1081397632234160228)
 intents = discord.Intents.default()
 intents.members = True
 
@@ -57,10 +55,6 @@ class App(discord.Client):
         self.tree = app_commands.CommandTree(self)
     
     async def setup_hook(self) -> None:
-        if DEV:
-            self.tree.copy_global_to(guild=gu)
-            await self.tree.sync(guild=gu)
-        else:
             await self.tree.sync()
 
 app = App(intents=intents)
@@ -78,7 +72,7 @@ def get_vehicle_data():
     vehicle: teslapy.Vehicle = vehicles[selected_car]
     vehicle.sync_wake_up()
     vehicle_data = vehicle.get_vehicle_data()
-    print(vehicle_data)
+    logger.DEBUG(vehicle_data)
     return json.loads(str(vehicle_data))
 
 @app.event
@@ -106,7 +100,7 @@ async def on_ready() -> None:
     
     logger.info("TeslaPy is ready")
     logger.debug('Bot is now fully ready.')
-    logger.warning('will only work with the first car found in the list. This wil change in the future and will support multiple cars.')
+    logger.warning('will only work with the first car found in the list. This will change in the future and will support multiple cars.')
     selected_car = 0
 
 sentrymode = app_commands.tree.Group(
@@ -274,7 +268,7 @@ async def info(interaction: Interaction) -> None:
     embed = discord.Embed()
     embed.color = discord.Color.red()
     embed.set_author(name='Your Tesla Model ' + vehicle['vin'][3])
-    print(data)
+    logger.DEBUG(data)
     embed.title = f"{data['display_name']}"
     # Vehicle Image
     # TODO: Option Codes deprecated
@@ -282,7 +276,7 @@ async def info(interaction: Interaction) -> None:
         if 'CUSTOM_OPTIONS' in os.environ.keys():
             opt_codes = os.environ['CUSTOM_OPTIONS'].split(',')
     else: opt_codes = data['option_codes']
-    print(opt_codes)
+    logger.DEBUG(opt_codes)
     img = vehicle.compose_image(size=1024, options=','.join(opt_codes))
     img_url=requests.post(
         'https://freeimage.host/api/1/upload',
