@@ -32,5 +32,20 @@ ALLOWED_USERIDS=100000000000,200000000000
 python app.py
 ```
 
-# Important Notice
+# Security Advices
+## Important Note about how your credentials are stored
 Your session will be saved into a `cache.json` file. Even tho it is not a secure way to save a session token, I cannot modify that, so please make sure that you don't share your `cache.json` file with anyone.
+
+### Do not share your code to anyone, or make sure to exclude `logs/`, **`.env`** and **`cache.json`**
+The logs folder, the environment file and the cache file may contain private informations such as your Discord token, your Tesla account e-mail, and more importantly, the access to your Tesla account. See below if you accidentally sent these files.
+
+### What to do if your `cache.json` or token is leaked
+Immediately change your **Tesla account password**. If anyone gets access to your Tesla account, they will be able to remote start your car and unlock it, and execute a bunch of different actions.  
+To change your Tesla password, **[follow this link](https://auth.tesla.com/user/password/forgot)**. You will be asked to reauthenticate on every of your devices, and the tokens will expire.
+
+### Self-hosting this project
+If you self-host this bot on a server, make sure that only trusted persons can access it.
+
+### Using public hosting services such as **Glitch** or **Replit**
+**Do not host your bot on Glitch or Replit**. The `cache.json` is, once again, public and will not be hidden from people visiting your project on these services.  
+If you have a premium subscription on one of these services, you may be able to make your project private. However, it is still not recommended to publish your private token on one of these websites.
