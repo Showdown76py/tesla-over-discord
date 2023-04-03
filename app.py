@@ -1,4 +1,6 @@
+from datetime import datetime
 import json
+import traceback
 import requests
 import teslapy
 import os
@@ -44,7 +46,7 @@ logger.setLevel(logging.INFO)
 
 selected_car = None
 tesla = None
-vehicles = []
+vehicles: list[teslapy.Vehicle] = []
 intents = discord.Intents.default()
 intents.members = True
 
@@ -70,7 +72,7 @@ async def on_interaction(interaction: Interaction) -> None:
 
 async def wakeup():
     await app.change_presence(activity=discord.Game(name="Waking up..."), status=discord.Status.idle)
-    vehicles[0].sync_wake_up()
+    vehicles[0].sync_wake_up(timeout=120)
     await app.change_presence(status=discord.Status.online)
 
 async def get_vehicle_data():
@@ -266,7 +268,7 @@ async def open_chests(interaction: Interaction, which: app_commands.Choice[str])
     logger.debug("open_chests command called")
     await interaction.response.defer()
     vehicle: teslapy.Vehicle = vehicles[selected_car]
-    await wakeup()
+    # await wakeup() # Not required for trunk & frunk opening
     if which.value == "Rear":
         vehicle.command('ACTUATE_TRUNK', which_trunk="rear")
     elif which.value == "Front":
@@ -306,7 +308,7 @@ async def info(interaction: Interaction) -> None:
     logger.debug(data)
     embed.title = f"{data['display_name']}"
     # Vehicle Image
-    # TODO: Option Codes deprecated
+    # FIXME: Option Codes deprecated
     if data['option_codes'] is None or data['option_codes'] == []:
         if 'CUSTOM_OPTIONS' in os.environ.keys():
             opt_codes = os.environ['CUSTOM_OPTIONS'].split(',')
@@ -328,9 +330,13 @@ async def info(interaction: Interaction) -> None:
     embed.description += '\n' + ('⭕' if not data['vehicle_state']['sentry_mode'] else '🔴') + ' Sentry Mode is **'+('enabled' if data['vehicle_state']['sentry_mode'] else 'disabled')+'**'
     if data['climate_state']['is_climate_on']:
         embed.description += '\n🌡️ Climate is **on** (going to **' + str(data['climate_state']['driver_temp_settings']) + '°C**)'
+    if data['charge_state']['charge_port_door_open']:
+        embed.description += '\n🔌️ Charge port is **open**'
     if data['vehicle_state']['software_update']['status'] != '':
-        embed.description += '\n🔄️ **A software update is available**'
-
+        try: # TODO: Not tested yet
+            embed.description += f'\n\n🔄️ **A software update** ({data["vehicle_state"]["version"]}) **is available**'
+        except:
+            logger.error(traceback.format_exc())
     # Vehicle Data
     # Get loaction
     l = requests.get(f'https://nominatim.openstreetmap.org/reverse.php?lat={data["drive_state"]["latitude"]}&lon={data["drive_state"]["longitude"]}&format=jsonv2').json()
@@ -348,14 +354,32 @@ async def info(interaction: Interaction) -> None:
         charge_status = '🟥 Charge Interrupted'
     elif data['charge_state']['charging_state'] == 'Starting':
         charge_status = '🟦 Starting Charge'
-    elif data['charge_state']['charging_state'] == 'No Power':
+    elif data['charge_state']['charging_state'] == 'NoPower':
         charge_status = '⚠️ No Power'
     elif data['charge_state']['charging_state'] == 'Disconnected':
         charge_status = '🔌 Disconnected'
     else:
         charge_status = '❓ Unknown State'
-    embed.add_field(name=charge_status, value=f"**Battery Level:** {int(data['charge_state']['battery_level'])}% ({int(data['charge_state']['battery_range']*1.609)} km)")
+    try: os.mkdir('logs')
+    except: pass
+    with open('logs/charging_states.log', 'a') as f:
+        f.write(f"{data['charge_state']['charging_state']}")
+    
+    charge_status_value = f"**Battery Level:** {int(data['charge_state']['battery_level'])}% ({int(data['charge_state']['battery_range']*1.609)} km)"
+    
+    def format_minutes(minutes):
+        hours = minutes // 60
+        remaining_minutes = minutes % 60
+        if hours > 0:
+            return f"{hours} hour{'s' if hours > 1 else ''} and {remaining_minutes} minute{'s' if remaining_minutes > 1 else ''}"
+        else:
+            return f"{remaining_minutes} minute{'s' if remaining_minutes > 1 else ''}"
 
+    if data['charge_state']['charging_state'] in ["Charging"]:
+        charge_status_value += f" — **+{int(data['charge_state']['charge_energy_added'])+1} kWh** ({int(data['charge_state']['charge_miles_added_rated']*1.609)+1} km)"
+        charge_status_value += f"\n**Charging Rate:** {'{:.2f}'.format((int(data['charge_state']['charger_actual_current'])*int(data['charge_state']['charger_voltage'])/1000))} kW ({int(data['charge_state']['charge_rate']*1.609+1)} km/hr)"
+        charge_status_value += f"\n**"+format_minutes(int(data['charge_state']['minutes_to_full_charge']))+"** until the limit is reached"
+    embed.add_field(name=charge_status, value=charge_status_value)
     formatted_odometer = format(int(data['vehicle_state']['odometer']*1.609)+1, ',d').replace(',', ' ')
     status = 'Parked'
     if data['drive_state']['shift_state'] is not None:
