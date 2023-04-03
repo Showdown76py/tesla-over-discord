@@ -1,5 +1,5 @@
 # Tesla Over Discord
-Control your Tesla through your Discord application.
+Control your Tesla through your Discord application.  
 **Do not host your project on websites such as Glitch or Replit (where the source code is public). [See more here.](#using-public-hosting-services-such-as-glitch-or-replit)**
 
 ## Installation
