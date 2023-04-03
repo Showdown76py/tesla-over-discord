@@ -73,7 +73,14 @@ async def on_interaction(interaction: Interaction) -> None:
 
 async def wakeup():
     await app.change_presence(activity=discord.Game(name="Waking up..."), status=discord.Status.idle)
-    vehicles[0].sync_wake_up(timeout=120)
+    for i in range(3):
+        try:
+            vehicles[0].sync_wake_up(timeout=120)
+            break
+        except:
+            logger.debug("Failed to wake up vehicle. Retrying...")
+            continue
+    logger.error('Failed to wake-up car')
     await app.change_presence(status=discord.Status.online)
 
 async def get_vehicle_data():
