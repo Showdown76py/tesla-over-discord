@@ -135,7 +135,7 @@ async def activate(interaction: Interaction) -> None:
     vehicle: teslapy.Vehicle = vehicles[selected_car]
     await wakeup()
     vehicle.command('SET_SENTRY_MODE', on=True)
-    await interaction.followup.send("👀 Sentry Mode **activated**")
+    await interaction.followup.send("🔴 Sentry Mode **activated**")
 
 
 
@@ -151,7 +151,7 @@ async def deactivate(interaction: Interaction) -> None:
     vehicle: teslapy.Vehicle = vehicles[selected_car]
     await wakeup()
     vehicle.command('SET_SENTRY_MODE', on=False)
-    await interaction.followup.send("👀 Sentry Mode **deactivated**")
+    await interaction.followup.send("⭕️ Sentry Mode **deactivated**")
 
 app.tree.add_command(sentrymode)
 
@@ -429,7 +429,7 @@ async def unlock(interaction: Interaction) -> None:
     vehicle: teslapy.Vehicle = vehicles[selected_car]
     await wakeup()
     vehicle.command('LOCK')
-    await interaction.followup.send('🔓 **'+vehicle['display_name']+'** is now unlocked')
+    await interaction.followup.send('🔐 **'+vehicle['display_name']+'** is now locked')
 
 
 
