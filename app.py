@@ -9,6 +9,7 @@ import logging
 import dotenv
 from discord import app_commands, Interaction
 import base64
+from typing import List # Fix for precedent versions of Python
 
 
 dotenv.load_dotenv()
@@ -46,7 +47,7 @@ logger.setLevel(logging.INFO)
 
 selected_car = None
 tesla = None
-vehicles: list[teslapy.Vehicle] = []
+vehicles: List[teslapy.Vehicle] = []
 intents = discord.Intents.default()
 intents.members = True
 
