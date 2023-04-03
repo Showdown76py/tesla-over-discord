@@ -349,7 +349,7 @@ async def info(interaction: Interaction) -> None:
     # Get loaction
     l = requests.get(f'https://nominatim.openstreetmap.org/reverse.php?lat={data["drive_state"]["latitude"]}&lon={data["drive_state"]["longitude"]}&format=jsonv2').json()
     embed.add_field(name='🗺️ Location', value=f"{l['address']['municipality']}\n||**{l['address']['road']}** || *(click to reveal)*")
-    embed.add_field(name='🌡️ Car Temperature', value=f"{int(data['climate_state']['inside_temp'])}°C")
+    embed.add_field(name='🌡️ Int. Temperature', value=f"{int(data['climate_state']['inside_temp'])}°C")
     embed.add_field(name='🌆 Ext. Temperature', value=f"{int(data['climate_state']['outside_temp'])}°C")
     charge_status = None
     if data['charge_state']['charging_state'] == 'Disconnected':
@@ -386,7 +386,7 @@ async def info(interaction: Interaction) -> None:
     if data['charge_state']['charging_state'] in ["Charging"]:
         charge_status_value += f" — **+{int(data['charge_state']['charge_energy_added'])+1} kWh** ({int(data['charge_state']['charge_miles_added_rated']*1.609)+1} km)"
         charge_status_value += f"\n**Charging Rate:** {'{:.2f}'.format((int(data['charge_state']['charger_actual_current'])*int(data['charge_state']['charger_voltage'])/1000))} kW ({int(data['charge_state']['charge_rate']*1.609+1)} km/hr)"
-        charge_status_value += f"\n**"+format_minutes(int(data['charge_state']['minutes_to_full_charge']))+"** until the limit is reached"
+        charge_status_value += f"\n**"+format_minutes(int(data['charge_state']['minutes_to_full_charge']))+f"** until **{data['charge_state']['charge_limit_soc']}%** is reached"
     embed.add_field(name=charge_status, value=charge_status_value)
     formatted_odometer = format(int(data['vehicle_state']['odometer']*1.609)+1, ',d').replace(',', ' ')
     status = 'Parked'
