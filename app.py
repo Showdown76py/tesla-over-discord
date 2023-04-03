@@ -199,7 +199,7 @@ async def wake_up(interaction: Interaction) -> None:
     await interaction.response.defer()
     vehicle: teslapy.Vehicle = vehicles[selected_car]
     await wakeup()
-    await interaction.followup.send("🚗 Your car **" + get_vehicle_data()['display_name'] + "**now **woke up**")
+    await interaction.followup.send("🚗 Your car **" + (await get_vehicle_data())['display_name'] + "**now **woke up**")
 
 @commands.command(
     name="fart",
