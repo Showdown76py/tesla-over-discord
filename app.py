@@ -80,7 +80,7 @@ async def wakeup():
         except:
             logger.debug("Failed to wake up vehicle. Retrying...")
             continue
-    logger.error('Car woke up')
+    logger.info('Car woke up')
     await app.change_presence(status=discord.Status.online)
 
 async def get_vehicle_data():
